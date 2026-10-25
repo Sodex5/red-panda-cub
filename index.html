@@ -117,7 +117,16 @@ button {
 button:hover { border-color: var(--accent); }
 button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 button:focus-visible, a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.swatch { width: 40px; height: 40px; padding: 0; border-radius: 50%; border-width: 2px; }
+/* Touch screens: Look | Rotate switch and Tilt button on the stage */
+.touchbar { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 10px; z-index: 2; }
+.touchbar[hidden] { display: none; }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: rgba(255,255,255,0.94); border: 1px solid #cfdadf; box-shadow: 0 2px 10px rgba(20,35,43,0.14); }
+.touchbar button { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 8px 15px; border: 0; border-radius: 999px; background: transparent; color: #14232b; font-weight: 600; white-space: nowrap; }
+.touchbar button svg { width: 19px; height: 19px; flex: none; }
+.touchbar .tilt { background: rgba(255,255,255,0.94); border: 1px solid #cfdadf; box-shadow: 0 2px 10px rgba(20,35,43,0.14); }
+.touchbar button[aria-pressed="true"] { background: #2f8a64; color: #ffffff; border-color: #2f8a64; }
+.toast { position: absolute; left: 50%; bottom: 74px; transform: translateX(-50%); max-width: 86%; padding: 8px 14px; border-radius: 12px; background: rgba(20,35,43,0.9); color: #ffffff; font-size: 0.9rem; text-align: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: 2; }
+.toast.show { opacity: 1; }.swatch { width: 40px; height: 40px; padding: 0; border-radius: 50%; border-width: 2px; }
 .swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); background-clip: padding-box; }
 
 .info { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px 48px; margin-top: 34px; }
@@ -150,11 +159,18 @@ dl.specs dd { font-weight: 600; font-variant-numeric: tabular-nums; }
       <h1>Red panda cub</h1>
       <p>Drag to turn it, scroll or pinch to zoom. It turns to look at your cursor, breathes and blinks. Tap it to make it blink.</p>
     </div>
-    <div class="veil" id="veil">Loading the model (1.13 MB)</div>
+    <div class="touchbar" id="touchbar" hidden>
+      <div class="seg" role="group" aria-label="What dragging does">
+        <button type="button" id="t-look" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Look</button>
+        <button type="button" id="t-rotate" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>Rotate</button>
+      </div>
+      <button type="button" class="tilt" id="t-tilt" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2" transform="rotate(-15 12 12)"/><path d="M11 18h2" transform="rotate(-15 12 12)"/></svg><span>Tilt off</span></button>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>    <div class="veil" id="veil">Loading the model (1.13 MB)</div>
   </section>
 
   <div class="controls" role="group" aria-label="Viewer controls">
-    <div class="group"><button type="button" id="b-spin" aria-pressed="true">Spin</button></div>
+    <div class="group"><button type="button" id="b-spin" aria-pressed="false">Spin</button></div>
     <div class="group"><button type="button" id="b-eyes" aria-pressed="true">Eyes follow</button></div>
     <div class="group"><button type="button" id="b-wire" aria-pressed="false">Wireframe</button></div>
     <div class="group" role="group" aria-label="Lighting">
@@ -191,6 +207,7 @@ dl.specs dd { font-weight: 600; font-variant-numeric: tabular-nums; }
         <li>Blinks on its own every few seconds. Tap it to make it blink.</li>
         <li>Lowers its lids when it looks down, and breathes gently when idle.</li>
         <li>Drag to turn it, scroll or pinch to zoom, or jump to an eyes close-up.</li>
+        <li>On a phone, drag to make it look around, switch to Rotate to turn it, or turn on Tilt and tilt your phone.</li>
         <li>Switch between Baked (lighting baked into the texture) and Lit (live lights), and try three backdrops.</li>
       </ul>
       <h2 class="facts-title">Model facts</h2>
@@ -258,7 +275,7 @@ dl.specs dd { font-weight: 600; font-variant-numeric: tabular-nums; }
   controls.maxDistance = 4.5;
   controls.minPolarAngle = 0.6;
   controls.maxPolarAngle = 1.65;
-  controls.autoRotate = !reduceMotion;
+  controls.autoRotate = false;
   controls.autoRotateSpeed = 1.2;
   controls.update();
 
@@ -291,7 +308,7 @@ dl.specs dd { font-weight: 600; font-variant-numeric: tabular-nums; }
     scene.add(m);
   })();
 
-  var state = { baked: false, wire: false, eyes: true, spin: !reduceMotion };
+  var state = { baked: false, wire: false, eyes: true, spin: false };
   var meshes = [];
   var eyeL = null, eyeR = null;
   var EYE_CONVERGE = 0.03;
@@ -627,16 +644,18 @@ dl.specs dd { font-weight: 600; font-variant-numeric: tabular-nums; }
     });
   }
 
-  window.addEventListener("pointermove", function (e) {
+  function pointFrom(e) {
+    if (isTouch && (tiltOn || touchMode !== "look")) return;
     var r = renderer.domElement.getBoundingClientRect();
     pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
     pointer.y = -(((e.clientY - r.top) / r.height) * 2 - 1);
     pointer.x = Math.max(-1.6, Math.min(1.6, pointer.x));
     pointer.y = Math.max(-1.6, Math.min(1.6, pointer.y));
-  }, { passive: true });
+  }
+  window.addEventListener("pointermove", pointFrom, { passive: true });
 
   var downAt = null;
-  renderer.domElement.addEventListener("pointerdown", function (e) { downAt = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+  renderer.domElement.addEventListener("pointerdown", function (e) { downAt = { x: e.clientX, y: e.clientY, t: performance.now() }; pointFrom(e); });
   renderer.domElement.addEventListener("pointerup", function (e) {
     if (downAt && Math.abs(e.clientX - downAt.x) + Math.abs(e.clientY - downAt.y) < 6 && performance.now() - downAt.t < 300) triggerBlink(performance.now());
     downAt = null;
@@ -712,6 +731,87 @@ dl.specs dd { font-weight: 600; font-variant-numeric: tabular-nums; }
     state.spin = false; controls.autoRotate = false; pressed(bSpin, false);
     camera.position.set(-0.024, 0.6, 1.15); controls.target.set(-0.024, 0.56, 0.2); controls.update();
   });
+  // Touch screens have no cursor, so they get a Look | Rotate switch and a Tilt button.
+  // Look (the default): dragging moves the gaze. Rotate: dragging turns the model.
+  // Tilt: the panda looks toward whichever edge of the phone you dip.
+  var isTouch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  var touchMode = "look", tiltOn = false, tiltZero = null, gotTilt = false, toastTimer = null;
+  var bLook = document.getElementById("t-look"), bRotate = document.getElementById("t-rotate"),
+      bTilt = document.getElementById("t-tilt"), toastEl = document.getElementById("toast"),
+      caption = document.querySelector(".stage-title p");
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 3200);
+  }
+
+  function setMode(m) {
+    touchMode = m;
+    controls.enableRotate = m === "rotate";
+    pressed(bLook, m === "look");
+    pressed(bRotate, m === "rotate");
+    caption.textContent = m === "look"
+      ? "Drag to make it look around, pinch to zoom. Tap it to blink."
+      : "Drag to turn it, pinch to zoom. Tap it to blink.";
+  }
+
+  function onTilt(e) {
+    if (e.beta == null || e.gamma == null) return;
+    var a = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+    var dx = e.gamma, dy = e.beta;
+    if (a === 90) { dx = e.beta; dy = -e.gamma; }
+    else if (a === -90 || a === 270) { dx = -e.beta; dy = e.gamma; }
+    else if (a === 180) { dx = -e.gamma; dy = -e.beta; }
+    // however the phone is held when tilt is turned on counts as looking straight ahead
+    if (!tiltZero) tiltZero = { x: dx, y: dy };
+    gotTilt = true;
+    pointer.x = Math.max(-1.6, Math.min(1.6, (dx - tiltZero.x) / 20));
+    pointer.y = Math.max(-1.6, Math.min(1.6, -(dy - tiltZero.y) / 20));
+  }
+
+  function showTilt(on) {
+    tiltOn = on;
+    pressed(bTilt, on);
+    bTilt.querySelector("span").textContent = on ? "Tilt on" : "Tilt off";
+  }
+
+  function startTilt() {
+    tiltZero = null; gotTilt = false;
+    window.addEventListener("deviceorientation", onTilt);
+    showTilt(true);
+    toast("Tilt your phone to make it look around.");
+    setTimeout(function () {
+      if (tiltOn && !gotTilt) { stopTilt(); toast("This device doesn't report tilt, so it's off."); }
+    }, 1500);
+  }
+
+  function stopTilt() {
+    window.removeEventListener("deviceorientation", onTilt);
+    showTilt(false);
+  }
+
+  bTilt.addEventListener("click", function () {
+    if (tiltOn) { stopTilt(); return; }
+    if (typeof DeviceOrientationEvent === "undefined") { toast("This device doesn't report tilt."); return; }
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      // iPhone and iPad ask first; most Android phones don't need to
+      DeviceOrientationEvent.requestPermission().then(function (r) {
+        if (r === "granted") startTilt();
+        else toast("Motion access wasn't allowed, so tilt stays off.");
+      }).catch(function () { toast("Motion access wasn't allowed, so tilt stays off."); });
+    } else {
+      startTilt();
+    }
+  });
+  bLook.addEventListener("click", function () { setMode("look"); });
+  bRotate.addEventListener("click", function () { setMode("rotate"); });
+
+  if (isTouch) {
+    document.getElementById("touchbar").hidden = false;
+    setMode("look");
+  }
   var swatches = document.querySelectorAll(".swatch");
   swatches.forEach(function (s) {
     s.addEventListener("click", function () {

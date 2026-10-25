@@ -159,8 +159,8 @@ dl.specs dd { font-weight: 600; font-variant-numeric: tabular-nums; }
     <div class="group"><button type="button" id="b-wire" aria-pressed="false">Wireframe</button></div>
     <div class="group" role="group" aria-label="Lighting">
       <span class="lbl">Light</span>
-      <button type="button" id="b-baked" aria-pressed="true">Baked</button>
-      <button type="button" id="b-lit" aria-pressed="false">Lit</button>
+      <button type="button" id="b-baked" aria-pressed="false">Baked</button>
+      <button type="button" id="b-lit" aria-pressed="true">Lit</button>
     </div>
     <div class="group" role="group" aria-label="Background">
       <span class="lbl">Backdrop</span>
@@ -291,7 +291,7 @@ dl.specs dd { font-weight: 600; font-variant-numeric: tabular-nums; }
     scene.add(m);
   })();
 
-  var state = { baked: true, wire: false, eyes: true, spin: !reduceMotion };
+  var state = { baked: false, wire: false, eyes: true, spin: !reduceMotion };
   var meshes = [];
   var eyeL = null, eyeR = null;
   var EYE_CONVERGE = 0.03;
